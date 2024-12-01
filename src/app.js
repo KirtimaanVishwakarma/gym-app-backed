@@ -28,4 +28,27 @@ app.use(express.static('public')); //public is folder name
 
 app.use(cookieParser()); // to parse cookies
 
+//All routes imports
+import adminUserRoutes from './routes/adminUser.routes.js';
+//All Routes declarations
+app.use('/api/v1/admin-user', adminUserRoutes);
+
+// Catch-all route for undefined routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Path not found',
+    path: req.originalUrl,
+    method: req.method,
+  });
+});
+
+// Error-handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack); // Log the error stack
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: err.message,
+  });
+});
+
 export default app;
