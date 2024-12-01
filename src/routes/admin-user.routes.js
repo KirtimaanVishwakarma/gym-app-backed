@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerAdminUser } from '../controllers/adminUser.controller.js';
+import { registerAdminUser } from '../controllers/admin-user.controller.js';
 const router = Router();
 
 router.route('/register').post(registerAdminUser);

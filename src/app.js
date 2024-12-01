@@ -29,7 +29,7 @@ app.use(express.static('public')); //public is folder name
 app.use(cookieParser()); // to parse cookies
 
 //All routes imports
-import adminUserRoutes from './routes/adminUser.routes.js';
+import adminUserRoutes from './routes/admin-user.routes.js';
 //All Routes declarations
 app.use('/api/v1/admin-user', adminUserRoutes);
 

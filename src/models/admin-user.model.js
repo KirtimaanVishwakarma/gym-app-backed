@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { enums } from '../constants';
+import { enums, regex } from '../constants';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
@@ -7,8 +7,32 @@ import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 const adminUserSchema = new Schema(
   {
     name: { type: String, require: true },
-    email: { type: String, unique: true, require: true, index: true },
-    mobile: { type: Number, require: true, unique: true, index: true },
+    email: {
+      type: String,
+      unique: true,
+      require: true,
+      trim: true,
+      lowercase: true,
+      validate: {
+        validator: function (v) {
+          return regex.email.test(v);
+        },
+        message: (props) => `${props.value} Please enter valid email address!`,
+      },
+      index: true,
+    },
+    mobile: {
+      type: Number,
+      require: true,
+      unique: true,
+      validate: {
+        validator: function (v) {
+          return regex.mobile.test(v); // Regex for Indian mobile numbers
+        },
+        message: (props) => `${props.value} Please enter valid mobile number!`,
+      },
+      index: true,
+    },
     address: { type: String, require: true },
     gender: { type: String, require: true, enum: enums.gender },
     dob: { type: Date, require: true },
@@ -17,6 +41,7 @@ const adminUserSchema = new Schema(
     avatar: { type: Schema.Types.ObjectId, ref: 'File' },
     organizationLogo: { type: Schema.Types.ObjectId, ref: 'File' },
     status: { type: String, default: 'ACTIVE', enum: enums.activeStatus },
+    isNewUser: { type: Boolean, default: true },
     password: {
       type: String,
       required: [true, 'Password is required'],
