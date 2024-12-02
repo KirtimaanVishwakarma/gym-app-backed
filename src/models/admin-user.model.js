@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { enums, regex } from '../constants';
+import { enums, regex } from '../constants.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
@@ -35,12 +35,12 @@ const adminUserSchema = new Schema(
     },
     address: { type: String, require: true },
     gender: { type: String, require: true, enum: enums.gender },
-    dob: { type: Date, require: true },
+    dob: { type: Date },
     role: { type: String, default: 'ADMIN', enum: enums.adminRoles },
     organizationName: { type: String, require: true },
     avatar: { type: Schema.Types.ObjectId, ref: 'File' },
     organizationLogo: { type: Schema.Types.ObjectId, ref: 'File' },
-    status: { type: String, default: 'ACTIVE', enum: enums.activeStatus },
+    status: { type: String, default: 'PENDING', enum: enums.activeStatus },
     isNewUser: { type: Boolean, default: true },
     password: {
       type: String,
