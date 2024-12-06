@@ -7,6 +7,7 @@ import uploadOnCloudinary, {
 } from '../utils/cloudinary.js';
 
 const uploadFile = asyncHandler(async (req, res) => {
+  // req.files comes using multer to handle files
   const localPath = req.files?.File[0]?.path;
 
   if (!localPath) {

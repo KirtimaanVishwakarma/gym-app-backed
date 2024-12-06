@@ -3,6 +3,8 @@ import { enums, regex } from '../constants.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
+import addressSchema from './address.model.js';
+import crypto from "crypto";
 
 const adminUserSchema = new Schema(
   {
@@ -13,32 +15,33 @@ const adminUserSchema = new Schema(
       require: true,
       trim: true,
       lowercase: true,
-      validate: {
-        validator: function (v) {
-          return regex.email.test(v);
-        },
-        message: (props) => `${props.value} Please enter valid email address!`,
-      },
+      // validate: {
+      //   validator: function (v) {
+      //     return regex.email.test(v);
+      //   },
+      //   message: (props) => `${props.value} Please enter valid email address!`,
+      // },
       index: true,
     },
     mobile: {
       type: Number,
       require: true,
       unique: true,
-      validate: {
-        validator: function (v) {
-          return regex.mobile.test(v); // Regex for Indian mobile numbers
-        },
-        message: (props) => `${props.value} Please enter valid mobile number!`,
-      },
+      // validate: {
+      //   validator: function (v) {
+      //     return regex.mobile.test(v); // Regex for Indian mobile numbers
+      //   },
+      //   message: (props) => `${props.value} Please enter valid mobile number!`,
+      // },
       index: true,
     },
-    address: { type: String, require: true },
+    address: addressSchema,
     gender: { type: String, require: true, enum: enums.gender },
     dob: { type: Date },
     role: { type: String, default: 'ADMIN', enum: enums.adminRoles },
     organizationName: { type: String, require: true },
     avatar: { type: Schema.Types.ObjectId, ref: 'File' },
+    parentAdmin: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
     organizationLogo: { type: Schema.Types.ObjectId, ref: 'File' },
     status: { type: String, default: 'PENDING', enum: enums.activeStatus },
     isNewUser: { type: Boolean, default: true },
@@ -47,20 +50,21 @@ const adminUserSchema = new Schema(
       required: [true, 'Password is required'],
       minLength: [6, 'Password must be atleast 6 characters'],
     },
-    refreshToken: String,
+    refreshToken: { type: String },
+    resetPasswordToken: String,
+    resetPasswordExpiry: String,
   },
   { timestamps: true }
 );
 
 adminUserSchema.plugin(mongooseAggregatePaginate);
 
-export const AdminUser = mongoose.model('AdminUser', adminUserSchema);
-
 // password encryption
 adminUserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  return next();
+  const hashPassword = await bcrypt.hash(this.password, 10);
+  this.password = hashPassword;
+  next();
 });
 
 // check if password matches or not
@@ -93,3 +97,17 @@ adminUserSchema.methods.generateRefreshToken = function () {
   );
   return token;
 };
+
+adminUserSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  // hashing token using "sha256" algorithem
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.resetPasswordExpiry = Date.now() + 15 * 60 * 1000;
+  return resetToken;
+};
+
+export const AdminUser = mongoose.model('AdminUser', adminUserSchema);
