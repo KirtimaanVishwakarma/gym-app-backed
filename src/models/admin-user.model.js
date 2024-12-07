@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 import addressSchema from './address.model.js';
-import crypto from "crypto";
+import crypto from 'crypto';
 
 const adminUserSchema = new Schema(
   {
@@ -49,6 +49,7 @@ const adminUserSchema = new Schema(
       type: String,
       required: [true, 'Password is required'],
       minLength: [6, 'Password must be atleast 6 characters'],
+      select: false,
     },
     refreshToken: { type: String },
     resetPasswordToken: String,
@@ -79,6 +80,7 @@ adminUserSchema.methods.generateAccessToken = function () {
       id: this._id,
       role: this.role,
       organization: this.organizationName,
+      isNewUser: this.isNewUser,
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
@@ -99,12 +101,12 @@ adminUserSchema.methods.generateRefreshToken = function () {
 };
 
 adminUserSchema.methods.getResetPasswordToken = function () {
-  const resetToken = crypto.randomBytes(20).toString("hex");
+  const resetToken = crypto.randomBytes(20).toString('hex');
   // hashing token using "sha256" algorithem
   this.resetPasswordToken = crypto
-    .createHash("sha256")
+    .createHash('sha256')
     .update(resetToken)
-    .digest("hex");
+    .digest('hex');
 
   this.resetPasswordExpiry = Date.now() + 15 * 60 * 1000;
   return resetToken;
