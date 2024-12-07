@@ -76,7 +76,45 @@ const resetAdminPassword = asyncHandler(async (req, res) => {
 //==================== Reset password  =================
 
 //==================== Update Profile  =================
-const updateProfile = asyncHandler(async (req, res) => {});
+const updateProfile = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const updates = req.body;
+  const allowedUpdates = [
+    'name',
+    'address',
+    'gender',
+    'dob',
+    'organizationName',
+    'avatar',
+    'organizationLogo',
+  ];
+  const updateKeys = Object.keys(updates);
+
+  const isValidOperation = updateKeys.every((key) =>
+    allowedUpdates.includes(key)
+  );
+
+  if (!isValidOperation) {
+    throw new ApiError(400, 'Invalid update request');
+  }
+  const updatedUser = await AdminUser.findByIdAndUpdate(
+    id,
+    { $set: updates },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(404, 'Invalid requested user!');
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, 'Profile updated successfully!', updatedUser));
+});
 //==================== Update Profile  =================
 
 //==================== Admin Login  =================
@@ -129,7 +167,6 @@ const refreshToken = asyncHandler(async (req, res) => {
   }
   if (user.refreshToken !== requestedRefreshToken) {
     clearToken(res, 403, 'Refresh token is expired or used!', null);
-    // throw new ApiError(403, 'Refresh token is expired or used!');
     return;
   }
 
@@ -147,13 +184,6 @@ const refreshToken = asyncHandler(async (req, res) => {
       refreshToken,
     }
   );
-  // const accessToken = user.generateAccessToken();
-
-  // sendToken(res, 200, accessToken, refreshToken, 'Access token refreshed!', {
-  //   user,
-  //   accessToken,
-  //   refreshToken,
-  // });
 });
 //==================== new access and refresh token  =================
 
