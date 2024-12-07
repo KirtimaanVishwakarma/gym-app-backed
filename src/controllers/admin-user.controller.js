@@ -5,22 +5,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import emailHandler from '../utils/emailHandler.js';
 import getResetToken from '../utils/getResetToken.js';
 import { clearToken, sendToken } from '../utils/cookieHandler.js';
-
-const generateAccessAndRefreshToken = async (user) => {
-  try {
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(
-      500,
-      'Something went wrong while generating access and refresh token'
-    );
-  }
-};
+import generateAccessAndRefreshToken from '../utils/generateAccessAndRefreshToken.js';
 
 //==================== Admin-registration =================
 const registerAdminUser = asyncHandler(async (req, res) => {
@@ -120,6 +105,58 @@ const adminLogin = asyncHandler(async (req, res) => {
 });
 //==================== Admin Login  =================
 
+//==================== new access and refresh token  =================
+const refreshToken = asyncHandler(async (req, res) => {
+  const requestedRefreshToken = req.body?.refreshToken;
+
+  if (!requestedRefreshToken) {
+    throw new ApiError(401, 'No refresh token provided!');
+  }
+  const user = await AdminUser.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        refreshToken: null,
+      },
+    },
+    {
+      new: false,
+    }
+  );
+
+  if (!user) {
+    throw new ApiError(403, 'Invalid user found!');
+  }
+  if (user.refreshToken !== requestedRefreshToken) {
+    clearToken(res, 403, 'Refresh token is expired or used!', null);
+    // throw new ApiError(403, 'Refresh token is expired or used!');
+    return;
+  }
+
+  const { accessToken, refreshToken } =
+    await generateAccessAndRefreshToken(user);
+
+  sendToken(
+    res,
+    200,
+    accessToken,
+    refreshToken,
+    'Token refreshed successfully!',
+    {
+      accessToken,
+      refreshToken,
+    }
+  );
+  // const accessToken = user.generateAccessToken();
+
+  // sendToken(res, 200, accessToken, refreshToken, 'Access token refreshed!', {
+  //   user,
+  //   accessToken,
+  //   refreshToken,
+  // });
+});
+//==================== new access and refresh token  =================
+
 //==================== Admin logout  =================
 const adminLogout = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -153,4 +190,5 @@ export {
   adminLogin,
   updateProfile,
   adminLogout,
+  refreshToken,
 };
