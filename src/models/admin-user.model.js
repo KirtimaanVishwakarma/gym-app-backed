@@ -8,38 +8,38 @@ import crypto from 'crypto';
 
 const adminUserSchema = new Schema(
   {
-    name: { type: String, require: true },
+    name: { type: String, required: true },
     email: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
       trim: true,
       lowercase: true,
-      // validate: {
-      //   validator: function (v) {
-      //     return regex.email.test(v);
-      //   },
-      //   message: (props) => `${props.value} Please enter valid email address!`,
-      // },
+      validate: {
+        validator: function (v) {
+          return regex.email.test(v);
+        },
+        message: (props) => `${props.value} Please enter valid email address!`,
+      },
       index: true,
     },
     mobile: {
       type: Number,
-      require: true,
+      required: true,
       unique: true,
-      // validate: {
-      //   validator: function (v) {
-      //     return regex.mobile.test(v); // Regex for Indian mobile numbers
-      //   },
-      //   message: (props) => `${props.value} Please enter valid mobile number!`,
-      // },
+      validate: {
+        validator: function (v) {
+          return regex.mobile.test(v); // Regex for Indian mobile numbers
+        },
+        message: (props) => `${props.value} Please enter valid mobile number!`,
+      },
       index: true,
     },
     address: addressSchema,
-    gender: { type: String, require: true, enum: enums.gender },
-    dob: { type: Date },
+    gender: { type: String, required: true, enum: enums.gender },
+    dob: Number,
     role: { type: String, default: 'ADMIN', enum: enums.adminRoles },
-    organizationName: { type: String, require: true },
+    organizationName: { type: String, required: true },
     avatar: { type: Schema.Types.ObjectId, ref: 'File' },
     parentAdmin: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
     organizationLogo: { type: Schema.Types.ObjectId, ref: 'File' },

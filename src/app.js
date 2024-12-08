@@ -31,9 +31,10 @@ app.use(cookieParser()); // to parse cookies
 //All routes imports
 import adminUserRoutes from './routes/admin-user.routes.js';
 import fileRoutes from './routes/file.routes.js';
+import { API_VERSION } from './constants.js';
 //All Routes declarations
-app.use('/api/v1/admin-user', adminUserRoutes);
-app.use('/api/v1/file', fileRoutes);
+app.use(API_VERSION+'admin-user', adminUserRoutes);
+app.use(API_VERSION+'file', fileRoutes);
 
 // Catch-all route for undefined routes
 app.use((req, res, next) => {

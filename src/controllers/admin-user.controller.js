@@ -94,10 +94,10 @@ const updateProfile = asyncHandler(async (req, res) => {
   const isValidOperation = updateKeys.every((key) =>
     allowedUpdates.includes(key)
   );
-
   if (!isValidOperation) {
     throw new ApiError(400, 'Invalid update request');
   }
+  console.log('isValidOperation', isValidOperation);
   const updatedUser = await AdminUser.findByIdAndUpdate(
     id,
     { $set: updates },
@@ -108,7 +108,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   );
 
   if (!updatedUser) {
-    throw new ApiError(404, 'Invalid requested user!');
+    throw new ApiError(404, 'Invalid user request!');
   }
 
   res
