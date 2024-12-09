@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { uploadFile, deleteFile } from '../controllers/file.controller.js';
+import {
+  uploadFile,
+  deleteFile,
+  getAllFiles,
+} from '../controllers/file.controller.js';
 import fileUploader from '../middlewares/multer.middleware.js';
 import verifyJWT from '../middlewares/auth.middleware.js';
 
@@ -13,6 +17,7 @@ router
     uploadFile
   );
 
+router.route('/search').get(verifyJWT, getAllFiles);
 router.route('/delete').delete(verifyJWT, deleteFile);
 
 export default router;

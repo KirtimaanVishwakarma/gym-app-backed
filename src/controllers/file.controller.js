@@ -6,6 +6,11 @@ import uploadOnCloudinary, {
   deleteFileOnCloudinary,
 } from '../utils/cloudinary.js';
 
+const getAllFiles = asyncHandler(async (req, res) => {
+  const files = await Files.find();
+  return res.json(new ApiResponse(200, 'Files retrieved successfully', files));
+});
+
 const uploadFile = asyncHandler(async (req, res) => {
   // req.files comes using multer to handle files
   const localPath = req.files?.File[0]?.path;
@@ -55,4 +60,4 @@ const deleteFile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, 'File deleted successfully'));
 });
 
-export { uploadFile, deleteFile };
+export { getAllFiles, uploadFile, deleteFile };

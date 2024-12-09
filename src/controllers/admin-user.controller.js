@@ -97,7 +97,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (!isValidOperation) {
     throw new ApiError(400, 'Invalid update request');
   }
-  console.log('isValidOperation', isValidOperation);
+
   const updatedUser = await AdminUser.findByIdAndUpdate(
     id,
     { $set: updates },
@@ -214,6 +214,93 @@ const adminLogout = asyncHandler(async (req, res) => {
 });
 //==================== Admin logout  =================
 
+//==================== Get user details by id  =================
+const getAdminDetails = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  let user = await AdminUser.findById(id);
+  user = await user.getFullDetails();
+
+  if (!user) {
+    throw new ApiError(404, 'User not found!');
+  }
+  res.status(200).json(new ApiResponse(200, 'User found successfully', user));
+});
+//==================== Get user details by id  =================
+
+//==================== Get Own details  =================
+const getOwnDetails = asyncHandler(async (req, res) => {
+  let user = req.user;
+  user = await user.getFullDetails();
+  if (!user) {
+    throw new ApiError(404, 'User not found!');
+  }
+  res.status(200).json(new ApiResponse(200, 'User found successfully', user));
+});
+//==================== Get Own details  =================
+
+//==================== Soft Delete details  =================
+const toggleAdmin = asyncHandler(async (req, res) => {
+  const { id, status } = req.query;
+  if (!id || !status) {
+    throw new ApiError(400, 'Id and status are required!');
+  }
+  if (!['ACTIVE', 'INACTIVE']?.some((ele) => ele === status)) {
+    throw new ApiError(400, 'Invalid status request!');
+  }
+  const adminUser = await AdminUser.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!adminUser) {
+    throw new ApiError(404, 'User not found!');
+  }
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        `Status Updated to ${status} successfully!`,
+        adminUser
+      )
+    );
+});
+//==================== Soft Delete details  =================
+
+//==================== Update Password  =================
+const updatePassword = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!(oldPassword && newPassword)) {
+    throw new ApiError(400, 'Old password and new password are required!');
+  }
+
+  const user = await AdminUser.findById(id).select('+password');
+
+  if (!user || !(await user.isPasswordMatched(oldPassword))) {
+    throw new ApiError(401, 'Invalid old password!');
+  }
+
+  user.password = newPassword;
+  await user.save();
+  res
+    .status(200)
+    .json(new ApiResponse(200, 'Password updated successfully!', null));
+});
+//==================== Update Password  =================
+
+//==================== Get All User list pagination  =================
+//==================== Get All User list pagination  =================
+
 export {
   registerAdminUser,
   resetAdminPassword,
@@ -221,4 +308,8 @@ export {
   updateProfile,
   adminLogout,
   refreshToken,
+  getAdminDetails,
+  getOwnDetails,
+  toggleAdmin,
+  updatePassword,
 };

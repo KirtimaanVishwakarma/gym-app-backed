@@ -4,11 +4,11 @@ const addressSchema = new Schema(
   {
     addressLine1: {
       type: String,
-      required: true,
+      required: [true,'AddressLine 1 is required'],
     },
     addressLine2: {
       type: String,
-      required: true,
+      required: [true,'AddressLine 2 is required'],
     },
     addressLine3: {
       type: String,
@@ -21,11 +21,11 @@ const addressSchema = new Schema(
     },
     city: {
       type: String,
-      required: true,
+      required: [true,'City is required'],
     },
     state: {
       type: String,
-      required: true,
+      required: [true,'State is required'],
     },
   }
 );

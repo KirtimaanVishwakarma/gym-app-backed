@@ -112,4 +112,8 @@ adminUserSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
+adminUserSchema.methods.getFullDetails = async function () {
+  return this.populate(['parentAdmin', 'avatar', 'organizationLogo']);
+};
+
 export const AdminUser = mongoose.model('AdminUser', adminUserSchema);
